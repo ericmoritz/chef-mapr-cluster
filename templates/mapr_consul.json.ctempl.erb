@@ -1,0 +1,9 @@
+{
+  "clustername": "<%= @clustername %>",
+  "services": {
+    "mapr-cldb": [{{range service "<%= @clustername %>.mapr-cldb" }}"{{ .Address }}:{{ .Port }}",{{end}} null],
+    "mapr-zookeeper": [{{range service "<%= @clustername %>.mapr-zookeeper" }}"{{ .Address }}:{{ .Port }}",{{end}} null],
+    "mapr-resourcemanager": [{{range service "<%= @clustername %>.mapr-resourcemanager" }}"{{ .Address }}",{{end}} null  ]    
+  }
+}
+

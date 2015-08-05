@@ -19,43 +19,91 @@ include_recipe 'mapr_consul::prereqs'
 
 ## Install MapR packages specified by roles
 # mapping of role to package. 'true' means this role has a corresponding recipe.
-role2pkg = {
-  'mapr_consul_zookeeper' => true,
-  'mapr_consul_cldb' => 'mapr-cldb',
-  'mapr_consul_fileserver' => 'mapr-fileserver',
-  'mapr_consul_nfs' => true,
-  'mapr_consul_resourcemanager' => 'mapr-resourcemanager',
-  'mapr_consul_nodemanager' => 'mapr-nodemanager',
-  'mapr_consul_historyserver' => 'mapr-historyserver',
-  'mapr_consul_webserver' => 'mapr-webserver',
-  'mapr_consul_metrics' => 'mapr-metrics',
-  'mapr_consul_pig' => 'mapr-pig',
-  'mapr_consul_hive' => 'mapr-hive',
-  #'mapr_consul_hbase_master' => 'mapr-hbase-master',
-  #'mapr_consul_hbase_regionserver' => 'mapr-hbase-regionserver',
-  #'mapr_consul_hbase_client' => 'mapr-hbase-internal',
-}
+group node['mapr_consul']['group'] do
+  gid node['mapr_consul']['gid']
+end
 
-role2pkg.each do |role_name, pkg_name|
+user node['mapr_consul']['user'] do
+  uid node['mapr_consul']['uid']
+  gid node['mapr_consul']['gid']
+  shell '/bin/bash'
+  home "/home/#{node['mapr_consul']['user']}"
+end
+
+node['mapr_consul']['packages'].each do |key, info|
+  role_name = info["role"]
+  pkg_name = info["pkg_name"]
+  service_name = info["pkg_name"]
+
   if node.role?(role_name)
-    if pkg_name == true
+    if info["recipe"]
       # this package has dedicated recipe
-      include_recipe role_name.sub('mapr_consul_', 'mapr_consul::')
+      include_recipe info["recipe"]
     else
-      if role_name == 'mapr_consul_historyserver' and node[:facet_index] != 0
-        # only one history server is needed
-        next
-      end
       package pkg_name
+    end
+
+    info["services"].each do |x|
+      print "consul_service_def: #{x}"
+      consul_service_def x['name'] do |r|
+        tags (x['tags'] || []) + [node['mapr_consul']['clustername']]
+        port x['port']
+        check(
+          interval: '10s',
+          script: "service #{x['name']} status"
+        )
+      end
+
+      if x['start']
+        service x['name'] do
+          action [:enable, :start]
+        end
+      end
     end
   end
 end
 
-# start the warden
-service 'mapr-warden' do
-  only_if { File.exist?('/opt/mapr/initscripts/mapr-warden') }
-  action [:enable, :start]
+
+# watch the warden
+if File.exist?('/opt/mapr/initscripts/mapr-warden')
+  consul_service_def "mapr_warden" do
+    tags [node['mapr_consul']['clustername']]
+    check(
+      interval: '10s',
+      script: "service mapr-warden status"
+    )
+  end
 end
 
-# Install the consul client
-include_recipe "mapr_consul::consul_client"
+# render the template for the configure script
+cookbook_file "/opt/mapr/server/mapr_consul_configure.py" do
+  source "mapr_consul_configure.py"
+  mode "755"
+  owner "root"
+  group "root"
+end
+
+template "/opt/mapr/contrib/mapr_consul.json.ctempl" do
+  source "mapr_consul.json.ctempl.erb"
+  owner "root"
+  group "root"
+  mode '0644'
+  variables({
+              "clustername" => node["mapr_consul"]["clustername"]
+            })
+end
+
+consul_template_config 'mapr_consul.json' do
+  templates [{
+               source: '/opt/mapr/contrib/mapr_consul.json.ctempl',
+               destination: '/opt/mapr/conf/mapr_consul.json',
+             }]
+end
+
+service "consul" do
+  action [:enable, :start, :restart]
+end
+
+service "consul-template" do
+  action [:enable, :start, :restart]
+end
