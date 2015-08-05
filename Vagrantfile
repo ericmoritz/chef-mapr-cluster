@@ -38,15 +38,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "mapr-1" do |config|
-    file_to_disk = "mapr-1-disk"
+    file_to_disk = "./mapr-1-disk.vdi"
 
-    unless File.exist?(file_to_disk)
-      config.vm.customize ['createhd', '--filename', file_to_disk,
-                           '--size', 500 * 1024]
+    config.vm.provider "virtualbox" do | v |
+      v.memory = 1024 * 5
+
+      unless File.exist?(file_to_disk)
+        v.customize ['createhd', '--filename', file_to_disk, '--size', 500 * 1024]
+      end
+
+      v.customize [
+        'storageattach', :id, '--storagectl', 'IDE Controller',
+        '--port', 1, '--device', 0, '--type', 'hdd', '--medium',
+        file_to_disk
+      ]
     end
-    config.vm.customize ['storageattach', :id, '--storagectl',
-                         'IDE Controller', '--port', 1, '--device', 0
-                         , '--type', 'hdd', '--medium', file_to_disk]
                            
     config.vm.network "private_network", ip: "172.20.20.11"
     config.vm.hostname = "mapr-1"
@@ -58,7 +64,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         "recipe[consul-template]",
         "role[mapr_consul_zookeeper]",
         "role[mapr_consul_fileserver]",
-        "role[mapr_consul_cldb]"        
+        "role[mapr_consul_cldb]",
+        "role[mapr_consul_resourcemanager]",
+        "role[mapr_consul_nodemanager]"
       ]
 
       chef.json = {
