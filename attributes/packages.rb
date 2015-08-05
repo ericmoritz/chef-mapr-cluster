@@ -3,14 +3,14 @@ default['mapr_consul']['packages'] = {
     "role" => "mapr_consul_zookeeper",
     "pkg_name" => "mapr-zookeeper",
     "services" => [
-      {"name"=> "mapr-zookeeper", "start" => true, "port" => 5181, "tags" => ["core"]}
+      {"name"=> "mapr-zookeeper", "port" => 5181, "tags" => ["core"]}
     ]
   },
   "mapr_consul_cldb" => {
     "role" => "mapr_consul_cldb",
     "pkg_name" => "mapr-cldb",
     "services" => [
-      {"name" => "mapr-cldb", "start" => true, "port" => 7222},
+      {"name" => "mapr-cldb", "port" => 7222},
       {"name" => "mapr-cldb-http", "port" => 7220, "tags" => ["http"]},
       {"name" => "mapr-cldb-jmx", "port" => 7220}
     ]
@@ -34,7 +34,7 @@ default['mapr_consul']['packages'] = {
   },
   "mapr_consul_resourcemanager" => {
     "role" => "mapr_consul_resourcemanager",
-    "pkg_name" => "mapr-resorucemanager",
+    "pkg_name" => "mapr-resourcemanager",
     "services" => [
       {"name" => "mapr-resourcemanager-admin-rpc", "port" => 8033},
       {"name" => "mapr-resourcemanager-client-rpc", "port" => 8032},
