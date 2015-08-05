@@ -1,0 +1,4 @@
+1. Add `service mapr-zookeeper dstatus` discovery for announcing ZK quorum
+2. Add `maprcli node cldbmaster` discovery for announcing CLDB ready
+3. On ZK quorum, start warden on CLDB nodes
+4. On CLDB ready, start warden on all other nodes
