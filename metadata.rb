@@ -4,7 +4,7 @@ maintainer_email 'ericmoritz@gmail.com'
 license          'All rights reserved'
 description      'Installs/Configures mapr_consul'
 long_description 'Installs/Configures mapr_consul'
-version          '0.1.0'
+version          '0.0.0'
 
 depends 'ntp'
 depends 'consul'
