@@ -45,15 +45,24 @@ node['mapr_consul']['packages'].each do |key, info|
 
     info["services"].each do |x|
       print "consul_service_def: #{x}"
-      consul_service_def x['name'] do |r|
-        tags (x['tags'] || []) + [node['mapr_consul']['clustername']]
-        port x['port']
-        check(
-          interval: '10s',
-          script: "service #{x['name']} status"
-        )
+      if x['port'] 
+        consul_service_def x['name'] do |r|
+          tags (x['tags'] || []) + [node['mapr_consul']['clustername']]
+          port x['port']
+          check(
+            interval: '10s',
+            script: "nc -z -w5 localhost #{x['port']}"
+          )
+        end
+      else
+        consul_service_def x['name'] do |r|
+          tags (x['tags'] || []) + [node['mapr_consul']['clustername']]
+          check(
+            interval: '10s',
+            script: "service #{x['name']} status"
+          )
+        end
       end
-
       if x['start']
         service x['name'] do
           action [:enable, :start]
@@ -89,7 +98,9 @@ template "/opt/mapr/contrib/mapr_consul.json.ctempl" do
   group "root"
   mode '0644'
   variables({
-              "clustername" => node["mapr_consul"]["clustername"]
+              "clustername" => node["mapr_consul"]["clustername"],
+              "disk_glob" => node["mapr_consul"]["disk_glob"],
+              "disk_range" => node["mapr_consul"]["disk_range"]
             })
 end
 
@@ -97,6 +108,7 @@ consul_template_config 'mapr_consul.json' do
   templates [{
                source: '/opt/mapr/contrib/mapr_consul.json.ctempl',
                destination: '/opt/mapr/conf/mapr_consul.json',
+               command: '/opt/mapr/server/mapr_consul_configure.py /opt/mapr/conf/mapr_consul.json'
              }]
 end
 
