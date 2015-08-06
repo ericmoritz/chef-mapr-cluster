@@ -36,30 +36,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     end
   end
-
-  config.vm.define "mapr-1" do |config|
-    file_to_disk = "./mapr-1-disk.vdi"
-
-    config.vm.provider "virtualbox" do | v |
-      v.memory = 1024 * 5
-
-      unless File.exist?(file_to_disk)
-        v.customize ['createhd', '--filename', file_to_disk, '--size', 500 * 1024]
-      end
-
-      v.customize [
-        'storageattach', :id, '--storagectl', 'IDE Controller',
-        '--port', 1, '--device', 0, '--type', 'hdd', '--medium',
-        file_to_disk
-      ]
-    end
-                           
-    config.vm.network "private_network", ip: "172.20.20.11"
-    config.vm.hostname = "mapr-1"
-    config.vm.provision "chef_solo" do |chef|
-      chef.roles_path = "roles"
-
-      chef.run_list = [
+  nodes = [
+    # The first two are the HA nodes
+    {
+      'run_list' => [
         "recipe[consul]",
         "recipe[consul-template]",
         "role[mapr_consul_zookeeper]",
@@ -68,15 +48,72 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         "role[mapr_consul_resourcemanager]",
         "role[mapr_consul_nodemanager]"
       ]
+    },
+    {
+      'run_list' => [
+        "recipe[consul]",
+        "recipe[consul-template]",
+        "role[mapr_consul_zookeeper]",
+        "role[mapr_consul_fileserver]",
+        "role[mapr_consul_cldb]",
+        "role[mapr_consul_resourcemanager]",
+        "role[mapr_consul_nodemanager]"
+      ]
+    },
+    # The third node is everything else
+    {
+      'run_list' => [
+        "recipe[consul]",
+        "recipe[consul-template]",
+        "role[mapr_consul_zookeeper]",
+        "role[mapr_consul_fileserver]",
+        "role[mapr_consul_nodemanager]",
+        "role[mapr_consul_historyserver]",
+        "role[mapr_consul_webserver]"                
+      ]
+    },
 
-      chef.json = {
-        "consul" => {
-          "extra_params" => {
-            "advertise_addr" => "172.20.20.11"
+  ]
+
+  (1..3).each do |i|
+    name = "mapr-#{i}"  
+    ip = "172.20.20.#{10+i}"
+    file_to_disk = "./#{name}-disk.vdi"
+
+    config.vm.define name do |config|
+      
+      config.vm.provider "virtualbox" do | v |
+        v.memory = 1024
+
+        unless File.exist?(file_to_disk)
+          v.customize ['createhd', '--filename', file_to_disk, '--size', 500 * 1024]
+        end
+        v.customize [
+          'storageattach', :id, '--storagectl', 'IDE Controller',
+          '--port', 1, '--device', 0, '--type', 'hdd', '--medium',
+          file_to_disk
+        ]
+
+      end
+                           
+      config.vm.network "private_network", ip: ip
+      config.vm.hostname = "#{name}"
+      config.vm.provision "chef_solo" do |chef|
+        chef.roles_path = "roles"
+
+        chef.run_list = nodes[i-1]['run_list']
+        chef.json = {
+          "mapr_consul" => {
+            "isvm" => true
           },
-          "servers" => ["172.20.20.10"]
+          "consul" => {
+            "extra_params" => {
+              "advertise_addr" => ip
+            },
+            "servers" => ["172.20.20.10"]
+          }
         }
-      }
+      end
     end
   end
 end

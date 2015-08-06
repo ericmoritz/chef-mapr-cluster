@@ -33,7 +33,8 @@ cmd = (
         "/opt/mapr/server/configure.sh",
         "-u", "mapr",
         "-g", "mapr",
-        "-N", data['clustername']
+        "-N", data['clustername'],
+        "-on-prompt-cont", "y",
     ]
     + format_arg(
         "-Z", services.get('mapr-zookeeper', [])
@@ -44,15 +45,28 @@ cmd = (
     + format_arg(
         "-RM", services.get('mapr-resourcemanager', [])
     )
+    + format_arg(
+        "-HS", services.get('mapr-historyserver', [])
+    )
 )
 
-subprocess.check_call(cmd)
+if data.get('isvm'):
+    cmd.append('--isvm')
+    
+exitcode = subprocess.call(cmd)
+if exitcode != 0:
+    sys.exit(0)
 
-if not os.path.exists("/opt/mapr/conf/disks.txt"):
+if not os.path.exists("/opt/mapr/conf/disktab"):
     with open("/opt/mapr/conf/disks.txt.tmp", "w") as fh:
         for path in disks(data['disk_glob'], data['disk_range']):
             fh.write("{path}\n".format(path=path))
     os.rename("/opt/mapr/conf/disks.txt.tmp", "/opt/mapr/conf/disks.txt")
-    subprocess.check_call(["/opt/mapr/server/disksetup", "-F", "/opt/mapr/conf/disks.txt"])
+    exitcode = subprocess.call(["/opt/mapr/server/disksetup", "-F", "/opt/mapr/conf/disks.txt"])
+    if exitcode != 0:
+        sys.exit(0)
 
-subprocess.check_call(["service", "mapr-warden", "restart"])
+if os.path.exists("/opt/mapr/roles/zookeeper"):
+    subprocess.call(["service", "mapr-zookeeper", "restart"])
+
+subprocess.call(["service", "mapr-warden", "restart"])

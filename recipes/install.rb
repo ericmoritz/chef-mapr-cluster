@@ -100,15 +100,16 @@ template "/opt/mapr/contrib/mapr_consul.json.ctempl" do
   variables({
               "clustername" => node["mapr_consul"]["clustername"],
               "disk_glob" => node["mapr_consul"]["disk_glob"],
-              "disk_range" => node["mapr_consul"]["disk_range"]
+              "disk_range" => node["mapr_consul"]["disk_range"],
+              "isvm" => node["mapr_consul"]["isvm"],
             })
 end
 
 consul_template_config 'mapr_consul.json' do
   templates [{
                source: '/opt/mapr/contrib/mapr_consul.json.ctempl',
-               destination: '/opt/mapr/conf/mapr_consul.json',
-               command: '/opt/mapr/server/mapr_consul_configure.py /opt/mapr/conf/mapr_consul.json'
+               destination: '/opt/mapr/conf/mapr_consul.json'
+               #command: '/opt/mapr/server/mapr_consul_configure.py /opt/mapr/conf/mapr_consul.json'
              }]
 end
 
