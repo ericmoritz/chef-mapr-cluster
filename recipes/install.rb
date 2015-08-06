@@ -15,22 +15,22 @@
 
 # Doc reference http://doc.mapr.com/display/MapR/Planning+the+Cluster
 
-include_recipe 'mapr_consul::prereqs'
+include_recipe 'mapr-cluster::prereqs'
 
 ## Install MapR packages specified by roles
 # mapping of role to package. 'true' means this role has a corresponding recipe.
-group node['mapr_consul']['group'] do
-  gid node['mapr_consul']['gid']
+group node['mapr_cluster']['group'] do
+  gid node['mapr_cluster']['gid']
 end
 
-user node['mapr_consul']['user'] do
-  uid node['mapr_consul']['uid']
-  gid node['mapr_consul']['gid']
+user node['mapr_cluster']['user'] do
+  uid node['mapr_cluster']['uid']
+  gid node['mapr_cluster']['gid']
   shell '/bin/bash'
-  home "/home/#{node['mapr_consul']['user']}"
+  home "/home/#{node['mapr_cluster']['user']}"
 end
 
-node['mapr_consul']['packages'].each do |key, info|
+node['mapr_cluster']['packages'].each do |key, info|
   role_name = info["role"]
   pkg_name = info["pkg_name"]
   service_name = info["pkg_name"]
@@ -47,7 +47,7 @@ node['mapr_consul']['packages'].each do |key, info|
       print "consul_service_def: #{x}"
       if x['port'] 
         consul_service_def x['name'] do |r|
-          tags (x['tags'] || []) + [node['mapr_consul']['clustername']]
+          tags (x['tags'] || []) + [node['mapr_cluster']['clustername']]
           port x['port']
           check(
             interval: '10s',
@@ -56,7 +56,7 @@ node['mapr_consul']['packages'].each do |key, info|
         end
       else
         consul_service_def x['name'] do |r|
-          tags (x['tags'] || []) + [node['mapr_consul']['clustername']]
+          tags (x['tags'] || []) + [node['mapr_cluster']['clustername']]
           check(
             interval: '10s',
             script: "service #{x['name']} status"
@@ -76,7 +76,7 @@ end
 # watch the warden
 if File.exist?('/opt/mapr/initscripts/mapr-warden')
   consul_service_def "mapr_warden" do
-    tags [node['mapr_consul']['clustername']]
+    tags [node['mapr_cluster']['clustername']]
     check(
       interval: '10s',
       script: "service mapr-warden status"
@@ -85,31 +85,31 @@ if File.exist?('/opt/mapr/initscripts/mapr-warden')
 end
 
 # render the template for the configure script
-cookbook_file "/opt/mapr/server/mapr_consul_configure.py" do
-  source "mapr_consul_configure.py"
+cookbook_file "/opt/mapr/server/mapr-cluster-configure.py" do
+  source "mapr-cluster-configure.py"
   mode "755"
   owner "root"
   group "root"
 end
 
-template "/opt/mapr/contrib/mapr_consul.json.ctempl" do
-  source "mapr_consul.json.ctempl.erb"
+template "/opt/mapr/contrib/services.json.ctempl" do
+  source "services.json.ctempl.erb"
   owner "root"
   group "root"
   mode '0644'
   variables({
-              "clustername" => node["mapr_consul"]["clustername"],
-              "disk_glob" => node["mapr_consul"]["disk_glob"],
-              "disk_range" => node["mapr_consul"]["disk_range"],
-              "isvm" => node["mapr_consul"]["isvm"],
+              "clustername" => node["mapr_cluster"]["clustername"],
+              "disk_glob" => node["mapr_cluster"]["disk_glob"],
+              "disk_range" => node["mapr_cluster"]["disk_range"],
+              "isvm" => node["mapr_cluster"]["isvm"],
             })
 end
 
-consul_template_config 'mapr_consul.json' do
+consul_template_config 'mapr_cluster.json' do
   templates [{
-               source: '/opt/mapr/contrib/mapr_consul.json.ctempl',
-               destination: '/opt/mapr/conf/mapr_consul.json'
-               #command: '/opt/mapr/server/mapr_consul_configure.py /opt/mapr/conf/mapr_consul.json'
+               source: '/opt/mapr/contrib/services.json.ctempl',
+               destination: '/opt/mapr/conf/services.json'
+               #command: '/opt/mapr/server/mapr-cluster-configure.py /opt/mapr/conf/services.json'
              }]
 end
 

@@ -42,22 +42,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       'run_list' => [
         "recipe[consul]",
         "recipe[consul-template]",
-        "role[mapr_consul_zookeeper]",
-        "role[mapr_consul_fileserver]",
-        "role[mapr_consul_cldb]",
-        "role[mapr_consul_resourcemanager]",
-        "role[mapr_consul_nodemanager]"
+        "role[mapr_cluster_zookeeper]",
+        "role[mapr_cluster_fileserver]",
+        "role[mapr_cluster_cldb]",
+        "role[mapr_cluster_resourcemanager]",
+        "role[mapr_cluster_nodemanager]"
       ]
     },
     {
       'run_list' => [
         "recipe[consul]",
         "recipe[consul-template]",
-        "role[mapr_consul_zookeeper]",
-        "role[mapr_consul_fileserver]",
-        "role[mapr_consul_cldb]",
-        "role[mapr_consul_resourcemanager]",
-        "role[mapr_consul_nodemanager]"
+        "role[mapr_cluster_zookeeper]",
+        "role[mapr_cluster_fileserver]",
+        "role[mapr_cluster_cldb]",
+        "role[mapr_cluster_resourcemanager]",
+        "role[mapr_cluster_nodemanager]"
       ]
     },
     # The third node is everything else
@@ -65,11 +65,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       'run_list' => [
         "recipe[consul]",
         "recipe[consul-template]",
-        "role[mapr_consul_zookeeper]",
-        "role[mapr_consul_fileserver]",
-        "role[mapr_consul_nodemanager]",
-        "role[mapr_consul_historyserver]",
-        "role[mapr_consul_webserver]"                
+        "role[mapr_cluster_zookeeper]",
+        "role[mapr_cluster_fileserver]",
+        "role[mapr_cluster_nodemanager]",
+        "role[mapr_cluster_historyserver]",
+        "role[mapr_cluster_webserver]"                
       ]
     },
 
@@ -103,7 +103,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
         chef.run_list = nodes[i-1]['run_list']
         chef.json = {
-          "mapr_consul" => {
+          "mapr_cluster" => {
             "isvm" => true
           },
           "consul" => {

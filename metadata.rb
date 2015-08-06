@@ -1,9 +1,9 @@
-name             'mapr_consul'
+name             'mapr-cluster'
 maintainer       'Eric Moritz'
 maintainer_email 'ericmoritz@gmail.com'
 license          'All rights reserved'
-description      'Installs/Configures mapr_consul'
-long_description 'Installs/Configures mapr_consul'
+description      'Installs/Configures mapr-cluster'
+long_description 'Installs/Configures mapr-cluster'
 version          '0.0.0'
 
 depends 'ntp'

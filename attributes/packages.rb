@@ -1,13 +1,13 @@
-default['mapr_consul']['packages'] = {
-  "mapr_consul_zookeeper" => {
-    "role" => "mapr_consul_zookeeper",
+default['mapr_cluster']['packages'] = {
+  "mapr_cluster_zookeeper" => {
+    "role" => "mapr_cluster_zookeeper",
     "pkg_name" => "mapr-zookeeper",
     "services" => [
       {"name"=> "mapr-zookeeper", "port" => 5181, "tags" => ["core"]}
     ]
   },
-  "mapr_consul_cldb" => {
-    "role" => "mapr_consul_cldb",
+  "mapr_cluster_cldb" => {
+    "role" => "mapr_cluster_cldb",
     "pkg_name" => "mapr-cldb",
     "services" => [
       {"name" => "mapr-cldb", "port" => 7222},
@@ -15,15 +15,15 @@ default['mapr_consul']['packages'] = {
       {"name" => "mapr-cldb-jmx", "port" => 7220}
     ]
   },
-  "mapr_consul_fileserver" => {
-    "role" => "mapr_consul_fileserver",
+  "mapr_cluster_fileserver" => {
+    "role" => "mapr_cluster_fileserver",
     "pkg_name" => "mapr-fileserver",
     "services" => [
       {"name" => "mapr-fileserver"}
     ]
   },
-  "mapr_consul_nfs" => {
-    "role" => "mapr_consul_nfs",
+  "mapr_cluster_nfs" => {
+    "role" => "mapr_cluster_nfs",
     "pkg_name" => "nfs",
     "recipe" => "nfs",
     "services" => [
@@ -32,8 +32,8 @@ default['mapr_consul']['packages'] = {
       {"name" => "mapr-nfs-management", "port" => 9998}
     ]
   },
-  "mapr_consul_resourcemanager" => {
-    "role" => "mapr_consul_resourcemanager",
+  "mapr_cluster_resourcemanager" => {
+    "role" => "mapr_cluster_resourcemanager",
     "pkg_name" => "mapr-resourcemanager",
     "services" => [
       {"name" => "mapr-resourcemanager-admin-rpc", "port" => 8033},
@@ -42,8 +42,8 @@ default['mapr_consul']['packages'] = {
       {"name" => "mapr-resourcemanager-https", "port" => 8090, "tags" => ["https"]}
     ]
   },
-  "mapr_consul_nodemanager" => {
-    "role" => "mapr_consul_nodemanager",
+  "mapr_cluster_nodemanager" => {
+    "role" => "mapr_cluster_nodemanager",
     "pkg_name" => "mapr-nodemanager",
     "services" => [
       {"name" => "mapr-nodemanager", "port" => 8041},
@@ -51,8 +51,8 @@ default['mapr_consul']['packages'] = {
       {"name" => "mapr-nodemanager-https", "port" => 8044, "tags" => ["https"]}
     ]
   },
-  "mapr_consul_historyserver" => {
-    "role" => "mapr_consul_historyserver",
+  "mapr_cluster_historyserver" => {
+    "role" => "mapr_cluster_historyserver",
     "pkg_name" => "mapr-historyserver",
     "services" => [
       {"name" => "mapr-historyserver", "port" => 10020, "tags" => ["rpc"]},
@@ -60,8 +60,8 @@ default['mapr_consul']['packages'] = {
       {"name" => "mapr-historyserver-https", "port" => 19890, "tags" => ["https"]}
     ]
   },
-  "mapr_consul_webserver" => {
-    "role" => "mapr_consul_webserver",
+  "mapr_cluster_webserver" => {
+    "role" => "mapr_cluster_webserver",
     "pkg_name" => "mapr-webserver",
     "services" => [
       {"name" => "mapr-webserver-http", "port" => 8080, "tags" => ["http"]},

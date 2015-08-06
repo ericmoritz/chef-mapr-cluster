@@ -1,2 +1,2 @@
-include_recipe 'mapr_consul::install'
+include_recipe 'mapr-cluster::install'
 

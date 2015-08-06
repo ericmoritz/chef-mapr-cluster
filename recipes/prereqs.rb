@@ -1,4 +1,4 @@
-log '\n=========== Start MapR mapr_consul::prereqs.rb =============\n'
+log '\n=========== Start MapR mapr-cluster::prereqs.rb =============\n'
 
 directory '/tmp' do
   owner 'root'
@@ -145,7 +145,7 @@ end
 file '/etc/yum.repos.d/maprtech.repo' do
   content "[maprtech]
 name=MapR Technologies
-baseurl=http://package.mapr.com/releases/v#{node['mapr_consul']['version']}/redhat/
+baseurl=http://package.mapr.com/releases/v#{node['mapr_cluster']['version']}/redhat/
 enabled=1
 gpgcheck=0
 protect=1
