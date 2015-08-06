@@ -1,0 +1,13 @@
+{
+  "clustername": "<%= @clustername %>",
+  "disk_glob": "<%= @disk_glob %>",
+  "disk_range": <%= @disk_range.to_json %>,
+  "isvm": <%= @isvm ? "true" : "false" %>,
+  "services": {
+    "mapr-cldb": [{{range service "<%= @clustername %>.mapr-cldb" "passing, warning" }}"{{ .Address }}:{{ .Port }}",{{end}} null],
+    "mapr-zookeeper": [{{range service "<%= @clustername %>.mapr-zookeeper" "passing, warning" }}"{{ .Address }}:{{ .Port }}",{{end}} null],
+    "mapr-resourcemanager": [{{range service "<%= @clustername %>.mapr-resourcemanager-admin-rpc" "passing, warning" }}"{{ .Address }}",{{end}} null  ],
+    "mapr-historyserver": [{{range service "<%= @clustername %>.mapr-historyserver" "passing, warning" }}"{{ .Address }}",{{end}} null  ]
+  }
+}
+
